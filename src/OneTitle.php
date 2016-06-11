@@ -2,7 +2,8 @@
 
 namespace Xu42\Imdb;
 
-class OneTitle {
+class OneTitle
+{
 
     /**
      * @var string An string of one title prefix url
@@ -113,7 +114,7 @@ class OneTitle {
         preg_match_all('#name">(.*?)</span#', $oneTitleWritersDirty[0], $oneTitleWritersName);
         preg_match_all('#\((.*?)\)#', $oneTitleWritersDirty[0], $oneTitleWritersWhat);
         $oneTitleWriters = null;
-        for($i = 0; $i < count($oneTitleWritersId[1]); $i++) {
+        for ($i = 0; $i < count($oneTitleWritersId[1]); $i++) {
             $oneTitleWriters[] = [
                 $oneTitleWritersId[1][$i],
                 $oneTitleWritersName[1][$i],
