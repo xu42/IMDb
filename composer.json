@@ -1,0 +1,25 @@
+{
+    "name": "xu42/imdb",
+    "description": "Crawl IMDb movie rating, content rating, release date, poster, presentation, director, actor, duration and other information",
+    "keywords": [
+        "xu42",
+        "imdb"
+    ],
+    "homepage": "https://github.com/xu42/IMDb",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "xu42",
+            "homepage": "http://xu42.cn",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php" : "~5.5|~7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Xu42\\Imdb\\": "src"
+        }
+    }
+}
