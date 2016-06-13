@@ -17,6 +17,7 @@ $ composer require xu42/imdb
 ## Usage
 
 ``` php
+require_once './vendor/autoload.php';
 $title = 'tt0111161';
 $oneTitle = new \Xu42\Imdb\OneTitle();
 print_r($oneTitle->getMsgOfOneTitle($title));
