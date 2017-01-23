@@ -46,7 +46,7 @@ If you discover any security related issues, please using the issue tracker.
 
 ## License
 
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+The GPL2.0 License. Please see [License File](LICENSE.md) for more information.
 
 [ico-version]: https://img.shields.io/packagist/v/xu42/imdb.svg?style=flat-square
 [ico-license]: https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square
