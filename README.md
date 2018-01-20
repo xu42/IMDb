@@ -17,10 +17,10 @@ $ composer require xu42/imdb
 ## Usage
 
 ``` php
-require_once './vendor/autoload.php';
-$title = 'tt0111161';
-$oneTitle = new \Xu42\Imdb\OneTitle();
-print_r($oneTitle->getMsgOfOneTitle($title));
+require_once 'vendor/autoload.php';
+use Xu42\Imdb\OneTitle;
+$res = OneTitle::singleton()->get('tt0111161');
+echo json_encode($res) . PHP_EOL;
 ```
 
 ## Change log

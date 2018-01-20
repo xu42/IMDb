@@ -2,8 +2,11 @@
 
 namespace Xu42\Imdb;
 
+use Xu42\Utilities\DesignPattern\Singleton;
+
 class OneTitle
 {
+    use Singleton;
 
     /**
      * @var string An string of one title prefix url
@@ -25,14 +28,19 @@ class OneTitle
     /**
      * @var string sources of webpage with one title
      */
-    private $oneTitleWebpage = '';
+    private $oneTitleWebPage = '';
 
+
+    public function get($title)
+    {
+        return $this->getMsgOfOneTitle($title);
+    }
 
     /**
      * Get sources of Webpage with one IMDb's title
      * @return String
      */
-    private function getWebpageOfOneTitle()
+    private function getWebPageOfOneTitle()
     {
         $headers = [
             'Host: www.imdb.com',
@@ -50,9 +58,9 @@ class OneTitle
         curl_setopt($ch, CURLOPT_TIMEOUT, 60);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
-        $this->oneTitleWebpage = curl_exec($ch);
+        $this->oneTitleWebPage = curl_exec($ch);
         curl_close($ch);
-        return $this->oneTitleWebpage;
+        return $this->oneTitleWebPage;
     }
 
     /**
@@ -65,27 +73,27 @@ class OneTitle
         $this->oneTitle = $title;
         $this->oneTitleUrl = $this->oneTitlePrefixUrl . $title . '/?ref_=nv_mv_dflt_1';
 
-        if (strlen($this->oneTitleWebpage) == 0) {
-            $this->getWebpageOfOneTitle();
+        if (strlen($this->oneTitleWebPage) == 0) {
+            $this->getWebPageOfOneTitle();
         }
 
         // title
-        preg_match('#<title>(.*?) -#', $this->oneTitleWebpage, $oneTitleTitle);
+        preg_match('#<title>(.*?) -#', $this->oneTitleWebPage, $oneTitleTitle);
 
         // rating Value
-        preg_match('#ratingValue">(\d\.\d)<#', $this->oneTitleWebpage, $oneTitleRatingValue);
+        preg_match('#ratingValue">(\d\.\d)<#', $this->oneTitleWebPage, $oneTitleRatingValue);
 
         // rating Count
-        preg_match('#ratingCount">(.*?)<#', $this->oneTitleWebpage, $oneTitleRatingCount);
+        preg_match('#ratingCount">(.*?)<#', $this->oneTitleWebPage, $oneTitleRatingCount);
 
         // content Rating
-        preg_match('#contentRating" content="(.*?)"#', $this->oneTitleWebpage, $oneTitleContentRating);
+        preg_match('#contentRating" content="(.*?)"#', $this->oneTitleWebPage, $oneTitleContentRating);
 
         // datePublished
-        preg_match('#datePublished" content="(.*?)"#', $this->oneTitleWebpage, $oneTitleDatePublished);
+        preg_match('#datePublished" content="(.*?)"#', $this->oneTitleWebPage, $oneTitleDatePublished);
 
         // Poster small
-        preg_match('#Poster"\nsrc="(.*?)"#', $this->oneTitleWebpage, $oneTitlePosterSmall);
+        preg_match('#Poster"\nsrc="(.*?)"#', $this->oneTitleWebPage, $oneTitlePosterSmall);
         // Poster big
         if (empty($oneTitlePosterSmall[1])) {
             $oneTitlePosterBig = "";
@@ -94,10 +102,10 @@ class OneTitle
         }
 
         // description
-        preg_match('#description">(.*?)<#s', $this->oneTitleWebpage, $oneTitleDescription);
+        preg_match('#description">(.*?)<#s', $this->oneTitleWebPage, $oneTitleDescription);
 
         // Director
-        preg_match('#Director:(.*?)</span#s', $this->oneTitleWebpage, $oneTitleDirectorDirty);
+        preg_match('#Director:(.*?)</span#s', $this->oneTitleWebPage, $oneTitleDirectorDirty);
         preg_match_all('#/name/(.*?)\?#', $oneTitleDirectorDirty[0], $oneTitleDirectorId);
         preg_match_all('#name">(.*?)</span#', $oneTitleDirectorDirty[0], $oneTitleDirectorName);
         $oneTitleDirector = null;
@@ -109,7 +117,7 @@ class OneTitle
         }
 
         // Writers
-        preg_match('#Writers:(.*?)</div#s', $this->oneTitleWebpage, $oneTitleWritersDirty);
+        preg_match('#Writers:(.*?)</div#s', $this->oneTitleWebPage, $oneTitleWritersDirty);
         preg_match_all('#/name/(.*?)\?#', $oneTitleWritersDirty[0], $oneTitleWritersId);
         preg_match_all('#name">(.*?)</span#', $oneTitleWritersDirty[0], $oneTitleWritersName);
         preg_match_all('#\((.*?)\)#', $oneTitleWritersDirty[0], $oneTitleWritersWhat);
@@ -123,7 +131,7 @@ class OneTitle
         }
 
         // cast_list
-        preg_match('#cast_list">(.*?)<\/table#s', $this->oneTitleWebpage, $oneTitleCastDirty);
+        preg_match('#cast_list">(.*?)<\/table#s', $this->oneTitleWebPage, $oneTitleCastDirty);
         preg_match_all('#class="[odd|even](.*?)<\/tr#s', $oneTitleCastDirty[1], $oneTitleCastDirtyTr);
         $oneTitleCast = null;
         for ($i = 0; $i < count($oneTitleCastDirtyTr[1]); $i++) {
@@ -136,71 +144,71 @@ class OneTitle
                 $oneTitleCastPhotoBig = strstr($oneTitleCastPhotoSmall[1], '_', true) . 'jpg';
             }
             $oneTitleCast[] = [
-                'id' => trim($oneTitleCastId[1]),
-                'name' => trim($oneTitleCastName[1]),
-                'photo_small' => trim($oneTitleCastPhotoSmall[1]),
+                'id' => trim($oneTitleCastId[1] ?? null),
+                'name' => trim($oneTitleCastName[1] ?? null),
+                'photo_small' => trim($oneTitleCastPhotoSmall[1] ?? null),
                 'photo_big' => trim($oneTitleCastPhotoBig)
             ];
         }
 
         // Shortline
-        preg_match_all('#<p>\n(.*?)<em#', $this->oneTitleWebpage, $oneTitleStoryline);
+        preg_match_all('#<p>\n(.*?)<em#', $this->oneTitleWebPage, $oneTitleStoryline);
 
         // Taglines
-        preg_match('#Taglines:</h4>\n(.*?)</div#s', $this->oneTitleWebpage, $oneTitleTaglines);
+        preg_match('#Taglines:</h4>\n(.*?)</div#s', $this->oneTitleWebPage, $oneTitleTagLines);
 
         // Genres
-        preg_match_all('#href="/genre/(.*?)\?ref_=tt_stry_gnr#', $this->oneTitleWebpage, $oneTitleGenres);
+        preg_match_all('#href="/genre/(.*?)\?ref_=tt_stry_gnr#', $this->oneTitleWebPage, $oneTitleGenres);
 
         // Details
-        preg_match('#href="/country/\w.*\?ref_=tt_dt_dt"\nitemprop=\'url\'>(\w.*)<#', $this->oneTitleWebpage, $oneTitleDetailsCountry);
-        preg_match('#href="/language/\w.*\?ref_=tt_dt_dt"\nitemprop=\'url\'>(\w.*)<#', $this->oneTitleWebpage, $oneTitleDetailsLanguage);
-        preg_match('#Release Date:</h4>(.*?)\n#', $this->oneTitleWebpage, $oneTitleDetailsReleaseDate);
+        preg_match('#href="/country/\w.*\?ref_=tt_dt_dt"\nitemprop=\'url\'>(\w.*)<#', $this->oneTitleWebPage, $oneTitleDetailsCountry);
+        preg_match('#href="/language/\w.*\?ref_=tt_dt_dt"\nitemprop=\'url\'>(\w.*)<#', $this->oneTitleWebPage, $oneTitleDetailsLanguage);
+        preg_match('#Release Date:</h4>(.*?)\n#', $this->oneTitleWebPage, $oneTitleDetailsReleaseDate);
         $oneTitleDetails = [
-            'country' => trim($oneTitleDetailsCountry[1]),
-            'language' => trim($oneTitleDetailsLanguage[1]),
-            'release_date' => trim($oneTitleDetailsReleaseDate[1])
+            'country' => trim($oneTitleDetailsCountry[1] ?? null),
+            'language' => trim($oneTitleDetailsLanguage[1] ?? null),
+            'release_date' => trim($oneTitleDetailsReleaseDate[1] ?? null)
         ];
 
         // Box Office
-        preg_match('#Budget:</h4>\s(.*?)\s\n#', $this->oneTitleWebpage, $oneTitleBoxofficeBudget);
-        preg_match('#Gross:</h4>\s(.*?)\s\n#', $this->oneTitleWebpage, $oneTitleBoxofficeGross);
-        $oneTitleBoxoffice = [
-            'budget' => trim($oneTitleBoxofficeBudget[1]),
-            'gross' => trim($oneTitleBoxofficeGross[1])
+        preg_match('#Budget:</h4>\s(.*?)\s\n#', $this->oneTitleWebPage, $oneTitleBoxOfficeBudget);
+        preg_match('#Gross:</h4>\s(.*?)\s\n#', $this->oneTitleWebPage, $oneTitleBoxOfficeGross);
+        $oneTitleBoxOffice = [
+            'budget' => trim($oneTitleBoxOfficeBudget[1] ?? null),
+            'gross' => trim($oneTitleBoxOfficeGross[1] ?? null)
         ];
 
         // Technical Specs
-        preg_match('#Technical Specs</h3>(.*?)technical specs#s', $this->oneTitleWebpage, $oneTitleTechnicalSpecsDirty);
+        preg_match('#Technical Specs</h3>(.*?)technical specs#s', $this->oneTitleWebPage, $oneTitleTechnicalSpecsDirty);
         preg_match('#>(\d.*\smin)<#', $oneTitleTechnicalSpecsDirty[1], $oneTitleTechnicalSpecsDuration);
         preg_match('#sound_mixes=(\w.*)&#', $oneTitleTechnicalSpecsDirty[1], $oneTitleTechnicalSpecsSound);
         preg_match('#colors=(\w.*)&#', $oneTitleTechnicalSpecsDirty[1], $oneTitleTechnicalSpecsColor);
         preg_match('#Aspect Ratio:</h4>\s(.*?)\n#', $oneTitleTechnicalSpecsDirty[1], $oneTitleTechnicalSpecsRatio);
         $oneTitleTechnicalSpecs = [
-            'duration' => trim($oneTitleTechnicalSpecsDuration[1]),
-            'sound_mix' => trim($oneTitleTechnicalSpecsSound[1]),
-            'color' => trim($oneTitleTechnicalSpecsColor[1]),
-            'aspect_ratio' => trim($oneTitleTechnicalSpecsRatio[1])
+            'duration' => trim($oneTitleTechnicalSpecsDuration[1] ?? null),
+            'sound_mix' => trim($oneTitleTechnicalSpecsSound[1] ?? null),
+            'color' => trim($oneTitleTechnicalSpecsColor[1] ?? null),
+            'aspect_ratio' => trim($oneTitleTechnicalSpecsRatio[1] ?? null)
         ];
 
-        $oneTitle =[
-            'title'            => is_null($oneTitleTitle[1]) ? "" : trim($oneTitleTitle[1]),
-            'rating_value'     => is_null($oneTitleRatingValue[1]) ? "" : trim($oneTitleRatingValue[1]),
-            'rating_count'     => is_null($oneTitleRatingCount[1]) ? "" : trim($oneTitleRatingCount[1]),
-            'content_rating'   => is_null($oneTitleContentRating[1]) ? "" : trim($oneTitleContentRating[1]),
-            'date_published'   => is_null($oneTitleDatePublished[1]) ? "" : trim($oneTitleDatePublished[1]),
-            'poster_small'     => is_null($oneTitlePosterSmall[1]) ? "" : trim($oneTitlePosterSmall[1]),
-            'poster_big'       => is_null($oneTitlePosterBig) ? "" : trim($oneTitlePosterBig),
-            'description'      => is_null($oneTitleDescription[1]) ? "" : trim($oneTitleDescription[1]),
-            'director'         => is_null($oneTitleDirector) ? "" : $oneTitleDirector,
-            'writers'          => is_null($oneTitleWriters) ? "" : $oneTitleWriters,
-            'cast'             => is_null($oneTitleCast) ? "" : $oneTitleCast,
-            'storyline'        => is_null($oneTitleStoryline[1][0]) ? "" : trim($oneTitleStoryline[1][0]),
-            'taglines'         => is_null($oneTitleTaglines[1]) ? "" : trim($oneTitleTaglines[1]),
-            'genres'           => is_null($oneTitleGenres[1]) ? "" : $oneTitleGenres[1],
-            'details'          => is_null($oneTitleDetails) ? "" : $oneTitleDetails,
-            'box_office'       => is_null($oneTitleBoxoffice) ? "" : $oneTitleBoxoffice,
-            'technical_specs'  => is_null($oneTitleTechnicalSpecs) ? "" : $oneTitleTechnicalSpecs,
+        $oneTitle = [
+            'title' => trim($oneTitleTitle[1] ?? null),
+            'rating_value' => trim($oneTitleRatingValue[1] ?? null),
+            'rating_count' => trim($oneTitleRatingCount[1] ?? null),
+            'content_rating' => trim($oneTitleContentRating[1] ?? null),
+            'date_published' => trim($oneTitleDatePublished[1] ?? null),
+            'poster_small' => trim($oneTitlePosterSmall[1] ?? null),
+            'poster_big' => trim($oneTitlePosterBig ?? null),
+            'description' => trim($oneTitleDescription[1] ?? null),
+            'director' => $oneTitleDirector ?? null,
+            'writers' => $oneTitleWriters ?? null,
+            'cast' => $oneTitleCast ?? null,
+            'storyline' => trim($oneTitleStoryline[1][0] ?? null),
+            'taglines' => trim($oneTitleTagLines[1] ?? null),
+            'genres' => $oneTitleGenres[1] ?? null,
+            'details' => $oneTitleDetails ?? null,
+            'box_office' => $oneTitleBoxOffice ?? null,
+            'technical_specs' => $oneTitleTechnicalSpecs ?? null,
         ];
         return $oneTitle;
     }
